@@ -6,6 +6,12 @@ import (
 	"github.com/btcsuite/btcd/wire"
 )
 
+const (
+	// Leave XOR-key empty
+	MEMPOOL_DUMP_VERSION_NO_XOR_KEY = 1
+	MEMPOOL_DUMP_VERSION            = 2
+)
+
 // FileHeader represents the mempool file header
 type FileHeader struct {
 	version int64
@@ -72,7 +78,7 @@ func (entry MempoolEntry) Info() string {
 type Mempool struct {
 	header    FileHeader
 	entries   []MempoolEntry
-	mapDeltas []byte
+	mapDeltas []byte // input unbroadcast_txids
 }
 
 // GetMempoolEntries returns a slice with mempool entries
