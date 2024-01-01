@@ -1,6 +1,8 @@
 package btc
 
 import (
+	"encoding/hex"
+
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/schnorr"
 	"github.com/btcsuite/btcd/btcutil"
@@ -53,11 +55,32 @@ const (
 	TaprootScript
 )
 
+func NewAddressFromPubKeyStr(netParam *chaincfg.Params, pubKeyHex string, addressType AddressType) (string, error) {
+	pubKeyBytes, err := hex.DecodeString(pubKeyHex)
+	if err != nil {
+		return "", err
+	}
+
+	pubkey, err := btcec.ParsePubKey(pubKeyBytes)
+	if err != nil {
+		return "", err
+	}
+
+	compressed := btcec.IsCompressedPubKey(pubKeyBytes)
+
+	addr, err := NewAddressWithPubKey(netParam, pubkey, compressed, addressType)
+	if err != nil {
+		return "", err
+	}
+
+	return addr.EncodeAddress(), nil
+}
+
 // NewAddressWithPubKey returns a new address based on the
 // passed account, public key, and whether or not the public key should be
 // compressed.
 func NewAddressWithPubKey(netParam *chaincfg.Params, pubKey *btcec.PublicKey, compressed bool,
-	addrType AddressType) (*btcutil.Address, error) {
+	addrType AddressType) (btcutil.Address, error) {
 
 	// Create a pay-to-pubkey-hash address from the public key.
 	var pubKeyHash []byte
@@ -130,5 +153,5 @@ func NewAddressWithPubKey(netParam *chaincfg.Params, pubKey *btcec.PublicKey, co
 		}
 	}
 
-	return &address, nil
+	return address, nil
 }
